@@ -7,12 +7,14 @@ import { Billing } from "../../components/Billing";
 const Sell = () => {
   return (
     <Layout>
-      <div>
-        <div>
+      <div className="flex  gap-x-8 ">
+        <div className="flex flex-col gap-y-5 w-[70%]">
           <Cart />
           <Product />
         </div>
-        <Billing />
+        <div className="w-[30%]">
+          <Billing />
+        </div>
       </div>
     </Layout>
   );
