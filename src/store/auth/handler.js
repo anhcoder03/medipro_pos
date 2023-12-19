@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { login } from "../../services/account.service";
 

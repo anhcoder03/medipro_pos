@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explici */
 import axios from "axios";
 import { store } from "../store/store";
+import { authLogout, refreshToken } from "../store/auth/authSlice";
 // import { store } from "../stores/app.store";
 // import { history } from "./history";
 
 class Http {
   constructor() {
     this.api = axios.create({
-      baseURL: `http://localhost:8000`,
+      baseURL: `https://api-medipro.onrender.com`,
       timeout: 10000,
       headers: {
         "Content-Type": "application/json",
@@ -22,53 +23,34 @@ class Http {
       return config;
     });
 
-    // this.api.interceptors.response.use(
-    //   (res) => res,
-    //   async (err) => {
-    //     if (err.response && err.response.status === 400) {
-    //       const originalRequest = err.config;
-    //       const refreshToken = store.getState().auth.refreshToken;
-    //       //authorization.
-    //       const errorResponseData = err.response.data; // Lấy thông tin lỗi từ phản hồi
+    this.api.interceptors.response.use(
+      (res) => res,
+      async (err) => {
+        if (err.response && err.response.status === 400) {
+          const originalRequest = err.config;
+          const refreshTokenz = store.getState().auth.auth?.refreshToken;
+          const errorResponseData = err.response.data; // Lấy thông tin lỗi từ phản hồi
 
-    //       if (
-    //         errorResponseData.errors && // Kiểm tra xem có thuộc tính 'errors' trong dữ liệu phản hồi hay không
-    //         errorResponseData.errors.authorization && // Kiểm tra xem có thuộc tính 'authorization' trong 'errors' hay không
-    //         errorResponseData.errors.authorization.msg && // Kiểm tra xem có thuộc tính 'msg' trong 'authorization' hay không
-    //         errorResponseData.errors.authorization.msg.message ===
-    //           "jwt expired" &&
-    //         errorResponseData.errors.authorization.msg.status === 402
-    //       ) {
-    //         if (refreshToken) {
-    //           try {
-    //             const response = await this.api.post("/auth/refresh-token", {
-    //               refreshToken: refreshToken,
-    //             });
-    //             store.dispatch({
-    //               type: REFRESH_TOKEN_SUCCESS,
-    //               payload: {
-    //                 accessToken: response.data.result.accessToken,
-    //                 refreshToken: response.data.result.refreshToken,
-    //               },
-    //             });
-    //             this.api.defaults.headers.common["Authorization"] =
-    //               response.data.result.accessToken;
-    //             originalRequest.headers["Authorization"] =
-    //               response.data.result.accessToken;
+          if (errorResponseData.message === "Token đã hết hạn!") {
+            try {
+              const response = await this.api.post("/refreshToken", {
+                refreshToken: refreshTokenz,
+              });
+              store.dispatch(refreshToken(response.data));
+              this.api.defaults.headers.common["Authorization"] =
+                response.data.accessToken;
+              originalRequest.headers["Authorization"] =
+                response.data.accessToken;
 
-    //             return this.api(originalRequest);
-    //           } catch (error) {
-    //             history.push(URL_CONSTANTS.LOGIN);
-    //           }
-    //         } else {
-    //           console.log("Refresh token not available.");
-    //           history.push(URL_CONSTANTS.LOGIN);
-    //         }
-    //       }
-    //     }
-    //     return Promise.reject(err);
-    //   }
-    // );
+              return this.api(originalRequest);
+            } catch (error) {
+              store.dispatch(authLogout());
+            }
+          }
+        }
+        return Promise.reject(err);
+      }
+    );
   }
 
   async get(url, params) {
