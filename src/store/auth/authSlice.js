@@ -15,6 +15,11 @@ const authSlice = createSlice({
       state.error = null;
       state.auth = null;
     },
+    refreshToken: (state, { payload }) => {
+      if (state.auth && payload.accessToken) {
+        state.auth.accessToken = payload.accessToken;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(handleLogin.pending, (state) => {
@@ -33,5 +38,5 @@ const authSlice = createSlice({
     });
   },
 });
-export const { authLogout } = authSlice.actions;
+export const { authLogout, refreshToken } = authSlice.actions;
 export default authSlice.reducer;

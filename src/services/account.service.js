@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const login = (data) => {
-  return axios.post("http://localhost:8000/signin", data);
+  return axios.post("https://api-medipro.onrender.com/signin", data);
 };
 export const changePassword = async (
   _id,
@@ -11,7 +11,7 @@ export const changePassword = async (
 ) => {
   try {
     const response = await axios.put(
-      "http://localhost:8000/changePassword",
+      "https://api-medipro.onrender.com/changePassword",
       {
         _id,
         password,
